@@ -6,7 +6,8 @@ on:
       - main # 触发的分支，可以根据需要修改
   schedule:
     - cron: "0 0 */15 * *" # 每 15 天构建一次
-
+env:
+  REGISTRY_URL: "ccr.ccs.tencentyun.com"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -42,3 +43,20 @@ jobs:
           context: ./docker-flarum
           push: true
           tags: qqzsc/dockerflarum:latest
+
+      ### 添加到腾讯云镜像仓库
+      - name: Sync Docker Image(tengxun云)
+        run: |
+          docker images
+          echo "-------------------------------------"
+          docker pull qqzsc/dockerflarum:latest
+          docker images
+          echo "-----------------切换到腾讯--------------------"
+          docker login --username ${{ secrets.TX_USERNAME }} --password-stdin  ${{ secrets.TX_PASSWORD }} ${{ env.REGISTRY_URL }}
+          echo "---------------查看登录状态---------------------------"
+          # 腾讯的有命名空间(可以多个) ----这个空间下面可以放很多镜像(也可以成为一个仓库)
+          docker tag  qqzsc/dockerflarum:latest ${{ env.REGISTRY_URL }}/zscflarum/dockerflarum:latest
+          docker images
+          echo "-------------------------------------"
+          docker push ${{ env.REGISTRY_URL }}/zscflarum/dockerflarum:latest
+          docker images
