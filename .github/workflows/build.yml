@@ -54,10 +54,12 @@ jobs:
           password: ${{ secrets.TX_PASSWORD }}
 
       # 腾讯的有命名空间(可以多个) ----这个空间下面可以放很多镜像(也可以成为一个仓库), 一个镜像下面有多个版本,注意区别
+      ### 如果涉及到多个注册地, 建议把地址也加上,分的清楚,默认为 docker.io
       - name: Login to Tencent Cloud
         run: |
           echo "-------------------------------------"
           docker images
+          # docker pull docker.io/zscgoweb/dockerflarum:latest #等价
           docker pull qqzsc/dockerflarum:latest
           echo "-------------------------------------"
           docker tag qqzsc/dockerflarum:latest ${{ env.REGISTRY_URL }}/zscgoweb/dockerflarum:latest
