@@ -52,7 +52,7 @@ jobs:
           docker pull qqzsc/dockerflarum:latest
           docker images
           echo "-----------------切换到腾讯--------------------"
-          docker login --username ${{ secrets.TX_USERNAME }} --password-stdin  ${{ secrets.TX_PASSWORD }} ${{ env.REGISTRY_URL }}
+          docker login ${{ env.REGISTRY_URL }} --username ${{ secrets.TX_USERNAME }} --password-stdin  ${{ secrets.TX_PASSWORD }} 
           echo "---------------查看登录状态---------------------------"
           # 腾讯的有命名空间(可以多个) ----这个空间下面可以放很多镜像(也可以成为一个仓库)
           docker tag  qqzsc/dockerflarum:latest ${{ env.REGISTRY_URL }}/zscflarum/dockerflarum:latest
