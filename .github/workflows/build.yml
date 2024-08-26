@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main # 触发的分支，可以根据需要修改
+  schedule:
+    - cron: "0 0 */15 * *" # 每 15 天构建一次
 
 jobs:
   build:
@@ -29,14 +31,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Make modifications
+        # 利用 bash 命令, 在以ENTRYPOINT开始的行前面插入内容
+        # (记住,github action 每一个阶段的初始目录都是项目的根目录)
         run: |
           cd docker-flarum
-          # 在以ENTRYPOINT开始的行前面插入内容
           awk '/^ENTRYPOINT/ { system("cat ../plugin"); } { print }' Dockerfile > file.tmp && mv file.tmp Dockerfile
-      - name: Add plugin
-        run: |
-          ls -al
-          pwd
       - name: Build and Push Container image
         uses: docker/build-push-action@v6
         with:
