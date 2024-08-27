@@ -8,10 +8,10 @@ on:
     - cron: "0 0 */15 * *" # 每 15 天构建一次
 env:
   REGISTRY_URL: "ccr.ccs.tencentyun.com"
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout your repository
         uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
         with:
           context: ./docker-flarum
           push: true
-          tags: qqzsc/dockerflarum:latest
+          tags: qqzsc/docker-flarum:latest
 
       # 切换到 腾讯云(居然不可以直接登录) (好像不能直接命令行登录)
       # docker login ${{ env.REGISTRY_URL }} --username ${{ secrets.TX_USERNAME }} --password-stdin  ${{ secrets.TX_PASSWORD }}
@@ -56,14 +56,10 @@ jobs:
       # 腾讯的有命名空间(可以多个) ----这个空间下面可以放很多镜像(也可以成为一个仓库), 一个镜像下面有多个版本,注意区别
       ### 如果涉及到多个注册地, 建议把地址也加上,分的清楚,默认为 docker.io
       - name: Login to Tencent Cloud
+        env:
+          FROM_IMAGE: docker.io/qqzsc/docker-flarum:latest
+          TO_IMAGE: ccr.ccs.tencentyun.com/zscgoweb/docker-flarum:latest
         run: |
-          echo "-------------------------------------"
-          docker images
-          # docker pull docker.io/zscgoweb/dockerflarum:latest #等价
-          docker pull qqzsc/dockerflarum:latest
-          echo "-------------------------------------"
-          docker tag qqzsc/dockerflarum:latest ${{ env.REGISTRY_URL }}/zscgoweb/dockerflarum:latest
-          docker images
-          echo "-------------------------------------"
-          docker push ${{ env.REGISTRY_URL }}/zscgoweb/dockerflarum:latest
-          docker images
+          docker pull ${{ env.FROM_IMAGE }}
+          docker tag  ${{ env.FROM_IMAGE }} ${{ env.TO_IMAGE }}
+          docker push ${{ env.TO_IMAGE }}

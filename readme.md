@@ -6,4 +6,6 @@
 
 ## 基本的思想
 
-- 就是往 Dockerfile 中添加了插件安装的步骤，然后重新构建镜像。(这里采用的是 github actions 的方式来构建镜像)
+- 就是往 Dockerfile 中添加了插件安装的步骤，然后重新构建镜像。
+
+- 基于 github action 构建,地址: [zoushucai/docker-flarum](https://github.com/zoushucai/docker-flarum)
