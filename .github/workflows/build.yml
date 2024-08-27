@@ -34,12 +34,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 利用 bash 命令, 在以ENTRYPOINT开始的行前面插入内容
+      # (记住,github action 每一个阶段的初始目录都是项目的根目录)
       - name: Make modifications
-        # 利用 bash 命令, 在以ENTRYPOINT开始的行前面插入内容
-        # (记住,github action 每一个阶段的初始目录都是项目的根目录)
         run: |
           cd docker-flarum
           awk '/^ENTRYPOINT/ { system("cat ../plugin"); } { print }' Dockerfile > file.tmp && mv file.tmp Dockerfile
+
+      ### 把 flarum 镜像推送到docker hub
       - name: Build and Push Container image
         uses: docker/build-push-action@v6
         with:
@@ -47,11 +49,28 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: qqzsc/docker-flarum:latest
+          # 这个参数可以把镜像加载到本地(此时platform 只能传递了一个平台) , 这样后面我们就不用编译了
           load: true
       - name: show docker image
         run: |
           docker images
           echo "-------------------------------------"
+      ### 切换到腾讯云
+      - name: Login to Tencent Cloud
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_URL }}
+          username: ${{ secrets.TX_USERNAME }}
+          password: ${{ secrets.TX_PASSWORD }}
+      - name: Sync Docker Image(tengxun云)
+        env:
+          FROM_IMAGE: qqzsc/docker-flarum:latest
+          TO_IMAGE: ccr.ccs.tencentyun.com/zscgoweb/docker-flarum:latest
+        run: |
+          docker tag  ${{ env.FROM_IMAGE }} ${{ env.TO_IMAGE }}
+          docker push ${{ env.TO_IMAGE }}
+
+      ##################### (腾讯云) ################################
       # 切换到 腾讯云(居然不可以直接登录) (好像不能直接命令行登录)
       # docker login ${{ env.REGISTRY_URL }} --username ${{ secrets.TX_USERNAME }} --password-stdin  ${{ secrets.TX_PASSWORD }}
       # - name: Login to Docker Hub
