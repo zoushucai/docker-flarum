@@ -1,0 +1,13 @@
+﻿*.log
+tmp
+mygo
+main
+!main.go
+main-*-amd64*
+img
+.vscode
+.DS_Store
+randomimages
+!docs
+dist
+logs/**

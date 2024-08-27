@@ -1,0 +1,46 @@
+name: build-go-binary
+
+on:
+  push:
+    # branches:
+    # - main # 仅在推送到 main 分支时触发(但是goreleaser必须要求具有 tags 标签的提交才能正常发布文件)
+    tags:
+      - "*" # 仅在推送到标签时触发
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+permissions:
+  contents: write
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ">=1.23.0"
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser # or 'goreleaser-pro'
+          version: "~> v2" # or 'latest', 'nightly', semver
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          ##############
+          # 需要具有 write:packages permission (建议在 GitHub 仓库中设置)
+          # 参考: https://goreleaser.com/quick-start/
+          # ### 然后创建一个标签并推送(打标签 和 git commit 是两个独立的操作)
+          # git commit -m "First release"
+          # git tag -a v0.1.0 -m "First release"
+          # git push origin main --tags
+          # --tags: 这个选项告诉 Git 除了推送分支外，还要推送所有本地的标签到远程仓库。
+          # 如果实在不想要标签
+          #  goreleaser release --snapshot --clean  # 本地测试构建,不发布
+          #

@@ -1,0 +1,49 @@
+﻿name: push ghcr.io
+## 参考: https://github.com/docker/build-push-action
+on:
+  push:
+    tags:
+      - "*"
+permissions:
+  contents: write
+jobs:
+  push_ghcr:
+    runs-on: ubuntu-latest
+    steps:
+      #### Step 1: Checkout the code from the repository (可以不需要,因为用不到)
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # fetch-depth 设置为 0 表示要获取整个提交历史记录, 默认为 1,表示只获取最新的提交
+
+      #### Add support for more platforms with QEMU (optional)
+      #### https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      #### Step 2: Log in to the GitHub Container Registry(发布镜像到GitHub Container Registry)
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          # 如果要发布到 docker hub
+          registry: ghcr.io
+          # 默认为当前用户名(github 的内置变量)
+          username: ${{ github.repository_owner }}
+          # 默认为GITHUB_TOKEN
+          password: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      #### Step 3: Build and Push the Docker image
+      - name: Build and Push Container image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          # 这里的标签格式: ghcr.io/用户名/仓库名:标签
+          #    eg: ghcr.io/qqzsc/randomimages:latest
+          tags: ghcr.io/${{ github.repository_owner }}/randomimages:${{ github.ref_name }}
+          build-args: VERSION=${{ github.ref_name }}
+          # # 如果这个仓库是私有仓库,那么需要添加 secrets并设置 GIT_AUTH_TOKEN
+          # secrets: |
+          #   GIT_AUTH_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}

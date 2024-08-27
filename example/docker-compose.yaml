@@ -1,0 +1,12 @@
+﻿services:
+  randomimages:
+    container_name: randomimages-server
+    image: qqzsc/randomimages:latest
+    # image: ghcr.io/zoushucai/randomimages:latest
+    restart: always
+    ports:
+      - "9113:9113"
+    volumes:
+      # 需要准好图片资源文件夹
+      - ./../assets:/app/assets
+      - ./logs:/app/logs
