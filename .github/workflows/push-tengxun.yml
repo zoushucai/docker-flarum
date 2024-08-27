@@ -5,6 +5,7 @@ on:
       - "*"
 env:
   REGISTRY_URL: "ccr.ccs.tencentyun.com"
+  IMAGE_NAME: "randomimages:latest"
 jobs:
   push_dockerhub:
     runs-on: ubuntu-latest
@@ -20,16 +21,19 @@ jobs:
         with:
           registry: ${{ env.REGISTRY_URL }}
           username: ${{ secrets.TX_USERNAME }}
-          password: ${{ secrets.TX_TOKEN }}
+          password: ${{ secrets.TX_PASSWORD }}
+
       ##### 利用 docker/build-push-action@v6 是不能直接推送到腾讯云的
       #### 其实,可以从国外的镜像仓库拉取镜像,然后推送到腾讯云的镜像仓库
+      #### docker pull qqzsc/randomimages:latest # 拉取镜像
       ##### Step 3: Build and Push the Docker image
+      - name: Build images
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }} .
+          docker images
       - name: Sync Docker Image
         run: |
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_URL }}/zscgoweb/${{ env.IMAGE_NAME }}
           docker images
-          docker pull docker.io/qqzsc/randomimages:latest
-          docker images
-          docker tag  docker.io/qqzsc/randomimages:latest ${{ env.REGISTRY_URL }}/zscgoweb/randomimages:latest
-          docker images
-          docker push ${{ env.REGISTRY_URL }}/zscgoweb/randomimages:latest
+          docker push ${{ env.REGISTRY_URL }}/zscgoweb/${{ env.IMAGE_NAME }}
           docker images
